@@ -13,6 +13,12 @@ let Review = require('./review.js')(sequelize, Sequelize.DataTypes);
  * @param {!express:Response} res HTTP response context.
  */
 exports.getCourseReviews = (req, res) => {
+    // Set CORS headers to allow GETs from any origin with the Content-Type header
+    // and cache preflight response for an 3600s
+    res.set("Access-Control-Allow-Origin", "*");
+    res.set("Access-Control-Allow-Methods", "GET");
+    res.set("Access-Control-Allow-Headers", "Content-Type");
+    res.set("Access-Control-Max-Age", "3600");
     res.status(200).send(Review.findAll({
         where: event.queryStringParameters
     }));

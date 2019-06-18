@@ -19,7 +19,12 @@ exports.getCourseReviews = (req, res) => {
     res.set("Access-Control-Allow-Methods", "GET");
     res.set("Access-Control-Allow-Headers", "Content-Type");
     res.set("Access-Control-Max-Age", "3600");
+
+    console.log(req.body);
     res.status(200).send(Review.findAll({
-        where: event.queryStringParameters
+        where: {
+            department_code: req.body.department_code,
+            course_num: req.body.course_num
+        }
     }));
 };

@@ -19,12 +19,11 @@ exports.getCourseReviews = (req, res) => {
     res.set("Access-Control-Allow-Headers", "Origin, Content-Type, X-Auth-Token");
     res.set("Access-Control-Max-Age", "3600");
 
-    console.log("REQUEST", req);
     return Review
         .findAll({
             where: {
-                department_code: req.params.department_code,
-                course_num: req.params.course_num
+                department_code: req.query.department_code,
+                course_num: req.query.course_num
             }
         })
         .then(reviews => {
@@ -33,5 +32,5 @@ exports.getCourseReviews = (req, res) => {
             }
             return res.status(200).send(reviews);
         })
-        .catch(error => res.status(400).send(error));
+        .catch(error => res.status(400).send({ err: error, req: req }));
 };

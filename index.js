@@ -20,11 +20,19 @@ exports.getCourseReviews = (req, res) => {
     res.set("Access-Control-Allow-Headers", "Content-Type");
     res.set("Access-Control-Max-Age", "3600");
 
-    console.log(req.body);
-    res.status(200).send(Review.findAll({
-        where: {
-            department_code: req.body.department_code,
-            course_num: req.body.course_num
-        }
-    }));
+    console.log("REQUEST", req);
+    return Review
+        .findAll({
+            where: {
+                department_code: req.params.department_code,
+                course_num: req.params.course_num
+            }
+        })
+        .then(reviews => {
+            if (!reviews) {
+                return res.status(404).send("Course not found");
+            }
+            return res.status(200).send(reviews);
+        })
+        .catch(error => res.status(400).send(error));
 };

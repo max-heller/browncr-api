@@ -15,7 +15,7 @@ let Review = require('./review.js')(sequelize, Sequelize.DataTypes);
 exports.getCourseReviews = (req, res) => {
     // Set CORS headers
     res.set("Access-Control-Allow-Origin", "*");
-    res.set("Access-Control-Allow-Methods", "GET, POST, PATCH, PUT, DELETE, OPTIONS");
+    res.set("Access-Control-Allow-Methods", "GET");
     res.set("Access-Control-Allow-Headers", "Origin, Content-Type, X-Auth-Token");
     res.set("Access-Control-Max-Age", "3600");
 
@@ -32,5 +32,5 @@ exports.getCourseReviews = (req, res) => {
             }
             return res.status(200).send(reviews);
         })
-        .catch(error => res.status(400).send({ err: error, req: req }));
+        .catch(error => res.status(400).send(error));
 };

@@ -1,10 +1,11 @@
 if (process.env.NODE_ENV !== 'production')
     require('dotenv').config();
-const Sequelize = require('sequelize');
+const config = JSON.parse(process.env.DB_CONFIG);
 
-let config = JSON.parse(process.env.DB_CONFIG);
-let sequelize = new Sequelize(config.database, config.username, config.password, config);
-let Review = require('./review.js')(sequelize, Sequelize.DataTypes);
+const Sequelize = require('sequelize');
+const Op = Sequelize.Op;
+const sequelize = new Sequelize(config.database, config.username, config.password, config);
+const Review = require('./review.js')(sequelize, Sequelize.DataTypes);
 
 /**
  * Responds to any HTTP request.
@@ -21,9 +22,9 @@ exports.getCourseReviews = (req, res) => {
 
     return Review
         .findAll({
+            attributes: ["crn", "edition", "courseavg", "profavg"],
             where: {
-                department_code: req.query.department_code,
-                course_num: req.query.course_num
+                [Op.or]: JSON.parse(req.query.crns)
             }
         })
         .then(reviews => {

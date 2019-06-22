@@ -24,7 +24,9 @@ exports.getCourseReviews = (req, res) => {
         .findAll({
             attributes: ["department_code", "course_num", "edition", "courseavg", "profavg"],
             where: {
-                [Op.or]: JSON.parse(req.query.selectors)
+                [Op.or]: JSON.parse(req.query.selectors),
+                courseavg: { [Op.between]: [1, 5] },
+                profavg: { [Op.between]: [1, 5] },
             }
         })
         .then(reviews => {

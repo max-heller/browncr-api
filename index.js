@@ -22,18 +22,17 @@ exports.getCourseReviews = (req, res) => {
 
     return Review
         .findAll({
-            attributes: ["department_code", "course_num", "edition", "courseavg", "profavg"],
+            attributes: [
+                "department_code", "course_num", "edition",
+                "courseavg", "profavg"
+            ],
             where: {
-                [Op.or]: JSON.parse(req.query.selectors),
-                courseavg: { [Op.between]: [1, 5] },
-                profavg: { [Op.between]: [1, 5] },
+                [Op.or]: {
+                    courseavg: { [Op.between]: [1, 5] },
+                    profavg: { [Op.between]: [1, 5] },
+                }
             }
         })
-        .then(reviews => {
-            if (!reviews) {
-                return res.status(404).send("Course not found");
-            }
-            return res.status(200).send(reviews);
-        })
+        .then(reviews => res.status(200).send(reviews))
         .catch(error => res.status(400).send(error));
 };

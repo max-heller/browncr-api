@@ -26,12 +26,6 @@ exports.getCourseReviews = (req, res) => {
                 "department_code", "course_num", "edition",
                 "courseavg", "profavg"
             ],
-            where: {
-                [Op.or]: {
-                    courseavg: { [Op.between]: [1, 5] },
-                    profavg: { [Op.between]: [1, 5] },
-                }
-            }
         })
         .then(reviews => res.status(200).send(reviews))
         .catch(error => res.status(400).send(error));

@@ -1,19 +1,40 @@
+# Use Dockerized infrastructure
+sudo: false
+
+# Use node_js environnement
 language: node_js
 node_js:
-- 8
-branches:
-  only:
-  - master
+  - 8
+
+# Cache Gcloud SDK between commands
+cache:
+  directories:
+  - node_modules
+  - "$HOME/google-cloud-sdk/"
+
+install:
+  - npm install
+
 script:
-- cd functions
-- npm install
-- npm run lint
-- cd ..
+  - npm run build
+  - npm run coveralls
+
+before_deploy:
+  - if [ ! -d "$HOME/google-cloud-sdk/bin" ]; then rm -rf $HOME/google-cloud-sdk; export CLOUDSDK_CORE_DISABLE_PROMPTS=1; curl https://sdk.cloud.google.com | bash; fi
+  - source /home/travis/google-cloud-sdk/path.bash.inc
+  - gcloud --quiet version
+  - gcloud --quiet components update
+
+  # use the decrypted service account credentials to authenticate the command line tool
+  - openssl aes-256-cbc -K $encrypted_07629293dfb8_key -iv $encrypted_07629293dfb8_iv -in gcloud-service-key.json.enc -out gcloud-service-key.json -d
+  - gcloud auth activate-service-account --key-file gcloud-service-key.json
+  - gcloud config set project brown-critical-review
+
 deploy:
-  provider: firebase
-  token:
-    secure: eML5Tb6HxnmjHBSQK2iaeYE+5J8XE6/94Y6DGA6YlLYarQ8rx40TwSc/G7y0AB9hGB+3i7Yk9/vCzZFPiGT9LG6IVtMXAieF3m20e7ma1N54Kq+wy2JMO41fU9Qd9qwDPLKgTv/aFbYT8Bjz1F1TzmimUbj778AWRvmQfTAXPD7G8FA8iBYjm50qJYXGTYIO5eXO4s0hnlgejSrw9qRNocbKRE50TMGXi/hlp5eH0uwRCRjRkGi3pRPTHMwBdrcap6JGZoobPTq6/DZ4k5OIOjLRrRWw9SJ3i6eoiEfqD6sTqwXG8BPP0orae2WENmNpaho13Xbs9CKeK0EUJFR93MyaTXuU7rhrcKbqJesVtnBj0SNVc57dqHXCBFIZpgOexQKb4qfbJBXh6BrnfcChU67jOiQBWAcPhbnYSKZuycsIrYeoLNi4Hg2KLTl/21+WSKq3Afgp8IaVwlclQ0l9LLBRSSFjWHxKBn2Wk5xbirKE8b8+ZPZRonavgS2wyL+pMKnpBWY4gGziv2wrLD+WrJw6PkbbHsjhYF4Eb8grJ7Wdrs5X27HP/ZXYZF/oZCLxGB14Vs3+mNOds3cqI72/ALjG8xiiqyOFYHKBuyishlXHrhKbYThCiKBqTeOTc4t7Izo/JEW8wzkE+E0ZMiUegDo573Ino/4IBZW9pVVqPdw=
-  skip_cleanup: true
-env:
-  global:
-    secure: HWoA33kBN87XIFQXflxfYikQj0OeYl3ypCvPVkevar9Ok4PEA1MAnwlEqNqjl7QFdi/WhpN1kz1ZKvQHh4A4/GPGeSXPECpUcH6jnJMj1vkCnY26SRNrNwRMrPTw6m8/iXwrnY2hs0pDP/6xIBIeZldpVgWH3Wooo07hrYzBmHe7K3MXeFlgeIy/HMvf3LUynwfd90TUsSmZRUDPV1+UVJps/YXUpJW7yGD2VOljNF1jM7/Mw4VKlT8xZG53QwiWuNlOVwj81GHDOefQQTrhR8MSduZft/gLlKpNZOHFKLQBww2Z9Qw2kliR+UoSGUpMA/PiIYpqfW8IekCKA4V++ktrtWe3c/cXEUGxQNTa/IYUaUywa4hAtOHfNGocF0qJC/lFUFiINJtyDzUG2SuPxtHXESFoJZ4hIlRy5tm/UDdreZFYOKJ8azekfcrQRSsne9etltgPUpAdK51M7zYBYgyRhoyJCM0kem4WUW9tGpH4Tuv0V0Opq/usu3NQFa4/7Hc8nWw7OmWYXIRuzlIsETVCunwpIs20JJCTQHWtiiil6AXw0JN7mi3zfuY4Wb2c0VdqZ6/WZl0bMhYmDJKsds6VOL4mcl13QpBAPz6c5QfgZnP339KhDjPs5Fw/Ns5WpaeIvV8OjyzXCAr2qox8ldtr636wE3VQ8pLpgVUZdOE=
+  - provider: script
+    script:
+      - cp build/* .
+      - gcloud --quiet functions deploy getAllScores --trigger-http --region="us-east1" --runtime="nodejs8"
+    skip_cleanup: true
+    on:
+      branch: master

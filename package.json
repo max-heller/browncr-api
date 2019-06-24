@@ -1,9 +1,0 @@
-{
-    "name": "getCourseReviews",
-    "version": "0.0.1",
-    "dependencies": {
-        "sequelize": "^5.8.10",
-        "dotenv": "^8.0.0",
-        "mysql2": "^1.6.5"
-    }
-}

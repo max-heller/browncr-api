@@ -33,8 +33,8 @@ exports.api = async (req: Request, res: Response) => {
         }
         case "scores": {
             const scores = courses ?
-                calculateScores(await getReviews(Review, courses)) : allScores;
-            return res.status(200).send(scores);
+                getReviews(Review, courses).then(calculateScores) : allScores;
+            return res.status(200).send(await scores);
         }
         default:
             return res.status(400).send("Please specify a request type");

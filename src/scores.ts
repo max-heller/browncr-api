@@ -1,14 +1,7 @@
 import { Review } from './review';
 
 export class Scores {
-    constructor(public prof?: number, public course?: number) { }
-
-    public static fromAccumulator(acc: ScoreAccumulator): Scores {
-        const scores = new Scores();
-        if (acc.profCount > 0) scores.prof = acc.profSum / acc.profCount;
-        if (acc.courseCount > 0) scores.course = acc.courseSum / acc.courseCount;
-        return scores;
-    }
+    constructor(public prof: number, public course: number) { }
 }
 
 export class ScoreAccumulator {
@@ -19,6 +12,10 @@ export class ScoreAccumulator {
 
     constructor() {
         this.profSum = this.profCount = this.courseSum = this.courseCount = 0;
+    }
+
+    public getScores(): Scores {
+        return new Scores(this.profSum / this.profCount, this.courseSum / this.courseCount);
     }
 }
 
@@ -38,7 +35,7 @@ export function calculateScores(reviews: Review[]): { [s: string]: Scores } {
 
     const allScores = {};
     Object.entries(accumulators).forEach(([course, acc]) => {
-        allScores[course] = Scores.fromAccumulator(acc);
+        allScores[course] = acc.getScores();
     });
     return allScores;
 }

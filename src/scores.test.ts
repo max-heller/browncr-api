@@ -91,8 +91,6 @@ test("scores calculated for each course in reviews", () => {
 
 test("score calculation converts old reviews", () => {
     const review = {
-
-
         course_name: "CSCI 1670",
         edition: "2012.2013.1",
         courseavg: 1,
@@ -138,12 +136,12 @@ test("score conversion doesn't affect new reviews", () => {
         profavg: 4.7,
         courseavg: 4.2
     };
-    expect(convertIfNecessary(atSwitch)).toBe(atSwitch);
+    expect(convertIfNecessary(atSwitch)).toEqual(atSwitch);
     const afterSwitch = {
         ...review,
         edition: "2015.2016.1",
         profavg: 4.7,
         courseavg: 4.2
     };
-    expect(convertIfNecessary(afterSwitch)).toBe(afterSwitch);
+    expect(convertIfNecessary(afterSwitch)).toEqual(afterSwitch);
 });

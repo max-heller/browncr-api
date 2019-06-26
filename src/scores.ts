@@ -45,7 +45,7 @@ export function calculateScores(reviews: Review[]): { [s: string]: Scores } {
 
 export function convertIfNecessary(review: Review): Review {
     function shouldConvert(edition: string): boolean {
-        var arr = edition.split('.').map(Number.parseInt);
+        const arr = edition.split('.').map(s => Number.parseInt(s));
         return (arr[0] < 2014 || (arr[0] === 2014 && arr[2] !== 2));
     }
 
@@ -54,8 +54,11 @@ export function convertIfNecessary(review: Review): Review {
     }
 
     if (shouldConvert(review.edition)) {
-        review.profavg = convert(review.profavg);
-        review.courseavg = convert(review.courseavg);
+        return {
+            ...review,
+            profavg: convert(review.profavg),
+            courseavg: convert(review.courseavg),
+        };
     }
     return review;
 }

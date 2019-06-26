@@ -5,6 +5,8 @@ import { getReviews } from './review';
 import { calculateScores } from './scores';
 
 const [db, Review] = initializeDatabase();
+const allReviews = getReviews(Review);
+const allScores = allReviews.then(calculateScores);
 
 exports.api = async (req: Request, res: Response) => {
     // Set CORS headers
@@ -26,12 +28,12 @@ exports.api = async (req: Request, res: Response) => {
     // Find API request type and respond accordingly
     switch (req.query.type) {
         case "reviews": {
-            const reviews = await getReviews(Review, courses);
-            return res.status(200).send(reviews);
+            const reviews = courses ? getReviews(Review, courses) : allReviews;
+            return res.status(200).send(await reviews);
         }
         case "scores": {
-            const reviews = await getReviews(Review, courses);
-            const scores = calculateScores(reviews);
+            const scores = courses ?
+                calculateScores(await getReviews(Review, courses)) : allScores;
             return res.status(200).send(scores);
         }
         default:

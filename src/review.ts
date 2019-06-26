@@ -1,72 +1,49 @@
-import { Sequelize, DataTypes, Model, BuildOptions } from 'sequelize';
+import { BuildOptions, DataTypes, Model, Op, Sequelize } from 'sequelize';
 
-export interface Review extends Model {
-    id: number;
+export interface Review {
+    course_name: string;
     edition: string;
-    department_code: string;
-    course_num: string;
-    section: string;
-    revision: number;
-    writer_id: number;
-    editor_id: number;
-    exec_id1: number;
-    exec_id2: number;
-    professor: string;
-    title: string;
-    academic_department: string;
-    crn: number;
-    num_respondents: number;
-    course_format: number;
-    courseformat: string;
-    observed_reading: number;
-    frosh: number;
-    soph: number;
-    jun: number;
-    sen: number;
-    grad: number;
-    total: number;
-    concs: number;
-    nonconcs: number;
-    dunno: number;
     profavg: number;
     courseavg: number;
-    minhours_mean: number;
-    minhours_median: number;
-    maxhours_mean: number;
-    maxhours_median: number;
-    review_contents: string;
-    editors: string;
-    editor_comments: string;
-    other_courses: string;
-    tally: string;
-    tally_graphic: number;
-    tally_filetype: string;
-    time: Date;
-    modifier: number;
-    edit_distance: number;
-    oldid: number;
-    barcode_id: number;
-    active: number;
-    views: number;
-    insufficient: number;
-    flagged: number;
-    is_on_staff_ballot: number;
-    featured_date: Date;
-    syllabus: string;
-    website: string;
-    print_editing: number;
-    archive_box: string;
-    prof_name_status: number;
-    prof_fixup_id: number;
-    survey_printer: string;
-    survey_spooled: number;
 }
 
-type ReviewStatic = typeof Model & {
-    new(values?: object, options?: BuildOptions): Review;
+export interface ReviewModel extends Model, Review { }
+
+export type ReviewStatic = typeof Model & {
+    new(values?: object, options?: BuildOptions): ReviewModel;
 }
 
-export function ReviewModel(sequelize: Sequelize): ReviewStatic {
+/**
+ * Retrieves reviews that have valid entries (in the range [1,5])
+ * in both the `courseavg` and `profavg` columns.
+ * @param model represents the review table in the database
+ * @param courses are the names of courses (e.g. ["CSCI 0190", "ENGN 0030"])
+ *                for which reviews should be retrieved. If undefined,
+ *                reviews are retrieved for all courses.
+ */
+export function getReviews(model: ReviewStatic, courses?: string[]): Promise<Review[]> {
+    const selectors = {
+        courseavg: { [Op.between]: [1, 5] },
+        profavg: { [Op.between]: [1, 5] },
+    };
+    if (courses) selectors[Op.or] = courses.map(course => {
+        const [dept, num] = course.split(' ');
+        return {
+            department_code: dept,
+            course_num: num
+        };
+    });
+
+    return model.findAll({
+        attributes: [
+            "department_code", "course_num", "edition",
+            "courseavg", "profavg"
+        ],
+        where: selectors,
+    });
+}
+
+export function ReviewTable(sequelize: Sequelize): ReviewStatic {
     return <ReviewStatic>sequelize.define('review', {
         id: {
             allowNull: false,
@@ -85,6 +62,15 @@ export function ReviewModel(sequelize: Sequelize): ReviewStatic {
         course_num: {
             allowNull: false,
             type: DataTypes.CHAR(16),
+        },
+        course_name: {
+            type: DataTypes.VIRTUAL,
+            get() {
+                return [
+                    this.getDataValue('department_code'),
+                    this.getDataValue('course_num')
+                ].join(' ');
+            }
         },
         section: {
             allowNull: false,

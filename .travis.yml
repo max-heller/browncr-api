@@ -34,7 +34,7 @@ deploy:
   - provider: script
     script:
       - cp build/* .
-      - gcloud --quiet functions deploy getAllScores --trigger-http --region="us-east1" --runtime="nodejs8"
+      - gcloud --quiet functions deploy api --trigger-http --region="us-east1" --runtime="nodejs8"
     skip_cleanup: true
     on:
       branch: master

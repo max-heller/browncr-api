@@ -1,40 +1,34 @@
-# Use Dockerized infrastructure
 sudo: false
-
-# Use node_js environnement
 language: node_js
 node_js:
-  - 8
-
-# Cache Gcloud SDK between commands
+- 8
 cache:
   directories:
   - node_modules
   - "$HOME/google-cloud-sdk/"
-
 install:
-  - npm install
-
+- npm install
 script:
-  - npm run build
-  - npm run coveralls
-
+- npm run build
+- npm run coveralls
 before_deploy:
-  - if [ ! -d "$HOME/google-cloud-sdk/bin" ]; then rm -rf $HOME/google-cloud-sdk; export CLOUDSDK_CORE_DISABLE_PROMPTS=1; curl https://sdk.cloud.google.com | bash; fi
-  - source /home/travis/google-cloud-sdk/path.bash.inc
-  - gcloud --quiet version
-  - gcloud --quiet components update
-
-  # use the decrypted service account credentials to authenticate the command line tool
-  - openssl aes-256-cbc -K $encrypted_07629293dfb8_key -iv $encrypted_07629293dfb8_iv -in gcloud-service-key.json.enc -out gcloud-service-key.json -d
-  - gcloud auth activate-service-account --key-file gcloud-service-key.json
-  - gcloud config set project brown-critical-review
-
+- if [ ! -d "$HOME/google-cloud-sdk/bin" ]; then rm -rf $HOME/google-cloud-sdk; export
+  CLOUDSDK_CORE_DISABLE_PROMPTS=1; curl https://sdk.cloud.google.com | bash; fi
+- source /home/travis/google-cloud-sdk/path.bash.inc
+- gcloud --quiet version
+- gcloud --quiet components update
+- openssl aes-256-cbc -K $encrypted_07629293dfb8_key -iv $encrypted_07629293dfb8_iv
+  -in gcloud-service-key.json.enc -out gcloud-service-key.json -d
+- gcloud auth activate-service-account --key-file gcloud-service-key.json
+- gcloud config set project brown-critical-review
 deploy:
-  - provider: script
-    script:
-      - cp build/* .
-      - gcloud --quiet functions deploy api --trigger-http --region="us-east1" --runtime="nodejs8"
-    skip_cleanup: true
-    on:
-      branch: master
+- provider: script
+  script:
+  - cp build/* .
+  - gcloud --quiet functions deploy api --trigger-http --region="us-east1" --runtime="nodejs8"
+  skip_cleanup: true
+  on:
+    branch: master
+env:
+  global:
+    secure: SApMRKXnOZlSnr/l0x8zNPX/iOm7K3w9wQNKDvzsTK7bLC5ll2It+5bEFzCgaSA32tKY8Ta4UzLbM0cqsZ5mmYFYAoBCGlrLKjbt/it/h8ur0mcY+z5NoZ0oDBv/G7a+KcusIwrPEjsztLoiRjLCINZhz75/bgoTSV/4Z/yXuvU21p+S4suaBKC6zoTMAy8IP25g8dErAkcUw2KE+FMmK9txdAfUJiikaOMs6ux4CIekO6w8M0vn9FRF4++W4IW37yXYbZmvTtdCooRBlSokcU0ZMn2krfAFCCXNzqHJ2RtlhHqK49AxgjjFMR0bMEWnv4CgXrrOb3S6qk56mD22pxgVLyOfCnE897xDTHt6n+TLsu7MjTRhy1yFK5Jr6p9eqXVaK6DUDYTn/nYZWrWF5EgEULiqLC/5nJdLq4+7JhQSsqYWQOWpfS+d+Nl2Mw4nSZGtOt0xctGk7HKXEFMo+e5Y7uNJcqTHQ9sHtPlihYaHfmfNXWwylsUO1t5Ye9Xw18m/4NQZW+DTsq/99gmL71zXy3lkE3bhsBJkf+bDO11s2kpGk0gnavoxYFG6FwJrFfYev5rea+lFE2u+eGD+6oQUwYQOT0xE33iJNdvARmN69o6y7HXBQ4BRAOI5C0ZgSyP+kSXLmQ0LhgkUXUg85uAK8TjMVFWIYIvUDj+9COs=

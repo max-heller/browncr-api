@@ -19,8 +19,7 @@ before_deploy:
 deploy:
 - provider: script
   script:
-  - cp build/* .
-  - gcloud --quiet functions deploy api --trigger-http --region="us-east1" --runtime="nodejs8"
+  - cp build/* . && gcloud beta --quiet functions deploy api --trigger-http --region="us-east1" --runtime="nodejs8"
   skip_cleanup: true
   on:
     branch: master

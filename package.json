@@ -1,5 +1,5 @@
 {
-    "name": "getCourseReviews",
+    "name": "browncr-api",
     "version": "0.0.1",
     "repository": {
         "type": "git",
@@ -12,8 +12,10 @@
     },
     "dependencies": {
         "@types/dotenv": "^6.1.1",
+        "@types/express": "^4.17.0",
         "@types/sequelize": "^4.28.3",
         "dotenv": "^8.0.0",
+        "express": "^4.17.1",
         "mysql2": "^1.6.5",
         "sequelize": "^5.8.10"
     },

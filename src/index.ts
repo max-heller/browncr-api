@@ -12,8 +12,11 @@ exports.api = async (req: Request, res: Response) => {
     // Set CORS headers
     res.set("Access-Control-Allow-Origin", "*");
     res.set("Access-Control-Allow-Methods", "GET");
-    res.set("Access-Control-Allow-Headers", "Origin, Content-Type, X-Auth-Token");
+    res.set("Access-Control-Allow-Headers", "Origin, Content-Type, X-Auth-Token, Authorization");
     res.set("Access-Control-Max-Age", "3600");
+
+    // Check authorization
+    console.log(req.headers.authorization);
 
     // Parse list of desired courses, if present
     let courses: string[] = undefined;

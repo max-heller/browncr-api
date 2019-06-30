@@ -23,3 +23,10 @@ deploy:
   skip_cleanup: true
   on:
     branch: master
+deploy:
+- provider: script
+  script:
+  - cp build/* . && gcloud beta --quiet functions deploy "api-develop" --trigger-http --region="us-east1" --runtime="nodejs8"
+  skip_cleanup: true
+  on:
+    branch: develop

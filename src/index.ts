@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import * as JWTDecode from 'jwt-decode';
 
 import { initializeDatabase } from './db';
 import { getReviews } from './review';
@@ -15,8 +16,14 @@ exports.api = async (req: Request, res: Response) => {
     res.set("Access-Control-Allow-Headers", "Origin, Content-Type, X-Auth-Token, Authorization");
     res.set("Access-Control-Max-Age", "3600");
 
-    // Check authorization
-    console.log(req.headers.authorization);
+    // Check authorization token, slicing off 'Bearer ' from header
+    const authError = (status) => res.status(status).send("Please provide an authorization token associated with brown.edu");
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return authError(401);
+    const token = JWTDecode(authHeader.slice(7));
+    if (token["hd"] !== "brown.edu") {
+        return authError(403);
+    }
 
     // Parse list of desired courses, if present
     let courses: string[] = undefined;

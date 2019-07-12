@@ -1,41 +1,35 @@
 import { Review } from './review';
 
-export class Scores {
-    constructor(public prof: number, public course: number) { }
-}
-
 export class ScoreAccumulator {
-    profSum: number;
-    profCount: number;
-    courseSum: number;
-    courseCount: number;
+    sum: number;
+    count: number;
 
     constructor() {
-        this.profSum = this.profCount = this.courseSum = this.courseCount = 0;
+        this.sum = this.count = 0;
     }
 
-    public getScores(): Scores {
-        return new Scores(this.profSum / this.profCount, this.courseSum / this.courseCount);
+    public getScore(): number {
+        return this.sum / this.count;
     }
 }
 
-export function calculateScores(reviews: Review[]): { [s: string]: Scores } {
+export function calculateScores(reviews: Review[]): { [s: string]: number } {
     const accumulators: { [s: string]: ScoreAccumulator } = {};
     reviews.map(convertIfNecessary).forEach(review => {
-        // Locate or initialize scores accumulator for the review's course
-        let acc = accumulators[review.course_name];
-        if (!acc) acc = accumulators[review.course_name] = new ScoreAccumulator();
+        [["course_name", "courseavg"], ["professor", "profavg"]].forEach(([key, score]) => {
+            // Locate or initialize score accumulator
+            let acc = accumulators[review[key]];
+            if (!acc) acc = accumulators[review[key]] = new ScoreAccumulator();
 
-        // Update course's scores accumulator
-        acc.profSum += review.profavg;
-        acc.profCount++;
-        acc.courseSum += review.courseavg;
-        acc.courseCount++;
+            // Update accumulator
+            acc.sum += review[score];
+            acc.count++;
+        });
     });
 
     const allScores = {};
-    Object.entries(accumulators).forEach(([course, acc]) => {
-        allScores[course] = acc.getScores();
+    Object.entries(accumulators).forEach(([key, acc]) => {
+        allScores[key] = acc.getScore();
     });
     return allScores;
 }

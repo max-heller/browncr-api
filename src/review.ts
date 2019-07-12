@@ -2,6 +2,7 @@ import { BuildOptions, DataTypes, Model, Op, Sequelize } from 'sequelize';
 
 export interface Review {
     course_name: string;
+    professor: string;
     edition: string;
     profavg: number;
     courseavg: number;
@@ -23,6 +24,7 @@ export type ReviewStatic = typeof Model & {
  */
 export function getReviews(model: ReviewStatic, courses?: string[]): Promise<Review[]> {
     const selectors = {
+        professor: { [Op.ne]: "" },
         courseavg: { [Op.between]: [1, 5] },
         profavg: { [Op.between]: [1, 5] },
     };
@@ -36,8 +38,8 @@ export function getReviews(model: ReviewStatic, courses?: string[]): Promise<Rev
 
     return model.findAll({
         attributes: [
-            "department_code", "course_num", "edition",
-            "courseavg", "profavg"
+            "department_code", "course_num", "professor",
+            "edition", "courseavg", "profavg"
         ],
         where: selectors,
     });

@@ -23,13 +23,13 @@ test("scores averaged from accumulator", () => {
 
 test("no reviews => no scores", () => {
     const scores = calculateScores([]);
-    expect(scores).toEqual({});
+    expect(scores).toEqual({ course: {}, prof: {} });
 });
 
 test("valid scores retrieved for single review", async () => {
     const scores = calculateScores([review]);
-    expect(scores[review.course_name]).toEqual(review.courseavg);
-    expect(scores[review.professor]).toEqual(review.profavg);
+    expect(scores["course"][review.course_name]).toEqual(review.courseavg);
+    expect(scores["prof"][review.professor]).toEqual(review.profavg);
 });
 
 test("multiple reviews' scores averaged", async () => {
@@ -40,8 +40,8 @@ test("multiple reviews' scores averaged", async () => {
     ];
     const scores = calculateScores(reviews);
     expect(scores).toEqual({
-        "CSCI 0190": (4.6 + 3.4 + 2.5) / 3,
-        "sk": (4.4 + 1.3 + 2.6) / 3
+        course: { "CSCI 0190": (4.6 + 3.4 + 2.5) / 3 },
+        prof: { "sk": (4.4 + 1.3 + 2.6) / 3 }
     });
 });
 
@@ -52,12 +52,16 @@ test("scores calculated for each course in reviews", () => {
         { ...review, course_name: "CSCI 1670", professor: "c" },
     ];
     expect(calculateScores(reviews)).toEqual({
-        "ENGL 0900": review.courseavg,
-        "ENGN 0030": review.courseavg,
-        "CSCI 1670": review.courseavg,
-        "a": review.profavg,
-        "b": review.profavg,
-        "c": review.profavg
+        course: {
+            "ENGL 0900": review.courseavg,
+            "ENGN 0030": review.courseavg,
+            "CSCI 1670": review.courseavg
+        },
+        prof: {
+            "a": review.profavg,
+            "b": review.profavg,
+            "c": review.profavg
+        }
     });
 });
 
@@ -70,8 +74,8 @@ test("score calculation converts old reviews", () => {
         profavg: 1
     };
     expect(calculateScores([review])).toEqual({
-        "CSCI 1670": 5,
-        "twd": 5
+        course: { "CSCI 1670": 5 },
+        prof: { "twd": 5 }
     });
 });
 

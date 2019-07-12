@@ -13,23 +13,26 @@ export class ScoreAccumulator {
     }
 }
 
-export function calculateScores(reviews: Review[]): { [s: string]: number } {
-    const accumulators: { [s: string]: ScoreAccumulator } = {};
-    reviews.map(convertIfNecessary).forEach(review => {
-        [["course_name", "courseavg"], ["professor", "profavg"]].forEach(([key, score]) => {
-            // Locate or initialize score accumulator
-            let acc = accumulators[review[key]];
-            if (!acc) acc = accumulators[review[key]] = new ScoreAccumulator();
+type NestedMap<T> = { [s: string]: { [s: string]: T } };
 
-            // Update accumulator
-            acc.sum += review[score];
-            acc.count++;
-        });
+export function calculateScores(reviews: Review[]): NestedMap<number> {
+    const accumulators: NestedMap<ScoreAccumulator> = { course: {}, prof: {} };
+    const updateAcc = (accs, key, score) => {
+        const acc = accs[key] || (accs[key] = new ScoreAccumulator());
+        acc.sum += score;
+        acc.count++;
+    }
+    reviews.map(convertIfNecessary).forEach(review => {
+        updateAcc(accumulators.course, review.course_name, review.courseavg);
+        updateAcc(accumulators.prof, review.professor, review.profavg);
     });
 
     const allScores = {};
-    Object.entries(accumulators).forEach(([key, acc]) => {
-        allScores[key] = acc.getScore();
+    Object.entries(accumulators).forEach(([type, nested]) => {
+        allScores[type] = {};
+        Object.entries(nested).forEach(([key, acc]) => {
+            allScores[type][key] = acc.getScore();
+        })
     });
     return allScores;
 }

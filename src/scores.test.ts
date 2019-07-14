@@ -1,7 +1,8 @@
-import { calculateScores, convertIfNecessary, ScoreAccumulator, Scores } from './scores';
+import { calculateScores, convertIfNecessary, ScoreAccumulator } from './scores';
 
 const review = {
     course_name: "CSCI 0190",
+    professor: "sk",
     edition: "2019.2020.1",
     courseavg: 4.5,
     profavg: 4.7
@@ -9,54 +10,26 @@ const review = {
 
 test("accumulator instantiation", () => {
     const acc = new ScoreAccumulator();
-    expect(acc.profSum).toBe(0);
-    expect(acc.profCount).toBe(0);
-    expect(acc.courseSum).toBe(0);
-    expect(acc.courseCount).toBe(0);
-});
-
-test("no scores in accumulator => undefined score in Scores", () => {
-    let acc = new ScoreAccumulator();
-    let scores = Scores.fromAccumulator(acc);
-    expect(scores).toEqual(new Scores());
-    expect(scores.prof).toBeUndefined();
-    expect(scores.course).toBeUndefined();
-
-    acc = new ScoreAccumulator();
-    acc.courseCount++;
-    acc.courseSum += 5;
-    scores = Scores.fromAccumulator(acc);
-    expect(scores.prof).toBeUndefined();
-    expect(scores.course).toBe(5);
-
-    acc = new ScoreAccumulator();
-    acc.profCount++;
-    acc.profSum += 5;
-    scores = Scores.fromAccumulator(acc);
-    expect(scores.prof).toBe(5);
-    expect(scores.course).toBeUndefined();
+    expect(acc.sum).toBe(0);
+    expect(acc.count).toBe(0);
 });
 
 test("scores averaged from accumulator", () => {
     const acc = new ScoreAccumulator();
-    acc.courseSum = 15;
-    acc.courseCount = 3;
-    acc.profSum = 8;
-    acc.profCount = 2;
-    expect(Scores.fromAccumulator(acc)).toEqual(new Scores(4, 5));
+    acc.sum = 15;
+    acc.count = 3;
+    expect(acc.getScore()).toEqual(5);
 });
 
 test("no reviews => no scores", () => {
     const scores = calculateScores([]);
-    expect(scores).toEqual({});
+    expect(scores).toEqual({ course: {}, prof: {} });
 });
 
 test("valid scores retrieved for single review", async () => {
     const scores = calculateScores([review]);
-    expect(scores[review.course_name]).toEqual({
-        course: review.courseavg,
-        prof: review.profavg
-    });
+    expect(scores["course"][review.course_name]).toEqual(review.courseavg);
+    expect(scores["prof"][review.professor]).toEqual(review.profavg);
 });
 
 test("multiple reviews' scores averaged", async () => {
@@ -67,40 +40,42 @@ test("multiple reviews' scores averaged", async () => {
     ];
     const scores = calculateScores(reviews);
     expect(scores).toEqual({
-        "CSCI 0190": {
-            course: (4.6 + 3.4 + 2.5) / 3,
-            prof: (4.4 + 1.3 + 2.6) / 3
-        }
+        course: { "CSCI 0190": (4.6 + 3.4 + 2.5) / 3 },
+        prof: { "sk": (4.4 + 1.3 + 2.6) / 3 }
     });
 });
 
 test("scores calculated for each course in reviews", () => {
     const reviews = [
-        { ...review, course_name: "ENGL 0900" },
-        { ...review, course_name: "ENGN 0030" },
-        { ...review, course_name: "CSCI 1670" },
+        { ...review, course_name: "ENGL 0900", professor: "a" },
+        { ...review, course_name: "ENGN 0030", professor: "b" },
+        { ...review, course_name: "CSCI 1670", professor: "c" },
     ];
-    const scores = calculateScores(reviews);
-    const expectedScores = { course: review.courseavg, prof: review.profavg };
-    expect(scores).toEqual({
-        "ENGL 0900": expectedScores,
-        "ENGN 0030": expectedScores,
-        "CSCI 1670": expectedScores,
+    expect(calculateScores(reviews)).toEqual({
+        course: {
+            "ENGL 0900": review.courseavg,
+            "ENGN 0030": review.courseavg,
+            "CSCI 1670": review.courseavg
+        },
+        prof: {
+            "a": review.profavg,
+            "b": review.profavg,
+            "c": review.profavg
+        }
     });
 });
 
 test("score calculation converts old reviews", () => {
     const review = {
         course_name: "CSCI 1670",
+        professor: "twd",
         edition: "2012.2013.1",
         courseavg: 1,
         profavg: 1
     };
     expect(calculateScores([review])).toEqual({
-        "CSCI 1670": {
-            course: 5,
-            prof: 5
-        }
+        course: { "CSCI 1670": 5 },
+        prof: { "twd": 5 }
     });
 });
 

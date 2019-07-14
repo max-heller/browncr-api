@@ -20,7 +20,12 @@ test("retrieving all reviews", async () => {
     let reviews = await getReviews(model);
     expect(reviews.length).toBeGreaterThan(0);
     reviews.forEach(review => {
+        expect(review.course_name).toBeDefined();
         expect(review.course_name).not.toEqual("");
+        expect(review.professor).toBeDefined();
+        expect(review.professor).not.toEqual("");
+        expect(review.edition).toBeDefined();
+        expect(review.edition).not.toEqual("");
         expect(review.courseavg).toBeGreaterThanOrEqual(1);
         expect(review.courseavg).toBeLessThanOrEqual(5);
         expect(review.profavg).toBeGreaterThanOrEqual(1);

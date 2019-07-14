@@ -1,44 +1,38 @@
 import { Review } from './review';
 
-export class Scores {
-    constructor(public prof?: number, public course?: number) { }
-
-    public static fromAccumulator(acc: ScoreAccumulator): Scores {
-        const scores = new Scores();
-        if (acc.profCount > 0) scores.prof = acc.profSum / acc.profCount;
-        if (acc.courseCount > 0) scores.course = acc.courseSum / acc.courseCount;
-        return scores;
-    }
-}
-
 export class ScoreAccumulator {
-    profSum: number;
-    profCount: number;
-    courseSum: number;
-    courseCount: number;
+    sum: number;
+    count: number;
 
     constructor() {
-        this.profSum = this.profCount = this.courseSum = this.courseCount = 0;
+        this.sum = this.count = 0;
+    }
+
+    public getScore(): number {
+        return this.sum / this.count;
     }
 }
 
-export function calculateScores(reviews: Review[]): { [s: string]: Scores } {
-    const accumulators: { [s: string]: ScoreAccumulator } = {};
-    reviews.map(convertIfNecessary).forEach(review => {
-        // Locate or initialize scores accumulator for the review's course
-        let acc = accumulators[review.course_name];
-        if (!acc) acc = accumulators[review.course_name] = new ScoreAccumulator();
+type NestedMap<T> = { [s: string]: { [s: string]: T } };
 
-        // Update course's scores accumulator
-        acc.profSum += review.profavg;
-        acc.profCount++;
-        acc.courseSum += review.courseavg;
-        acc.courseCount++;
+export function calculateScores(reviews: Review[]): NestedMap<number> {
+    const accumulators: NestedMap<ScoreAccumulator> = { course: {}, prof: {} };
+    const updateAcc = (accs, key, score) => {
+        const acc = accs[key] || (accs[key] = new ScoreAccumulator());
+        acc.sum += score;
+        acc.count++;
+    }
+    reviews.map(convertIfNecessary).forEach(review => {
+        updateAcc(accumulators.course, review.course_name, review.courseavg);
+        updateAcc(accumulators.prof, review.professor, review.profavg);
     });
 
     const allScores = {};
-    Object.entries(accumulators).forEach(([course, acc]) => {
-        allScores[course] = Scores.fromAccumulator(acc);
+    Object.entries(accumulators).forEach(([type, nested]) => {
+        allScores[type] = {};
+        Object.entries(nested).forEach(([key, acc]) => {
+            allScores[type][key] = acc.getScore();
+        })
     });
     return allScores;
 }
@@ -55,7 +49,9 @@ export function convertIfNecessary(review: Review): Review {
 
     if (shouldConvert(review.edition)) {
         return {
-            ...review,
+            course_name: review.course_name,
+            professor: review.professor,
+            edition: review.edition,
             profavg: convert(review.profavg),
             courseavg: convert(review.courseavg),
         };

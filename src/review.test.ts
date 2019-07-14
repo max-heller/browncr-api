@@ -24,6 +24,8 @@ test("retrieving all reviews", async () => {
         expect(review.course_name).not.toEqual("");
         expect(review.professor).toBeDefined();
         expect(review.professor).not.toEqual("");
+        expect(review.edition).toBeDefined();
+        expect(review.edition).not.toEqual("");
         expect(review.courseavg).toBeGreaterThanOrEqual(1);
         expect(review.courseavg).toBeLessThanOrEqual(5);
         expect(review.profavg).toBeGreaterThanOrEqual(1);

@@ -49,7 +49,9 @@ export function convertIfNecessary(review: Review): Review {
 
     if (shouldConvert(review.edition)) {
         return {
-            ...review,
+            course_name: review.course_name,
+            professor: review.professor,
+            edition: review.edition,
             profavg: convert(review.profavg),
             courseavg: convert(review.courseavg),
         };
